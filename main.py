@@ -22,7 +22,7 @@ receiver_email = os.environ['user_phones_email']
 
 # Days you want to get a text report, regardless of new trend
 # format of "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
-alert_days = ["Wed","Fri","Sat"]
+alert_days = ["Wed","Fri","Sat","Thu"]
 
 
 # app runs in a loop at set UTC hour
@@ -30,7 +30,7 @@ while True:
   print ("Restarting...")
   print("current utc hour:", datetime.datetime.utcnow().strftime("%H"))
   #below code causes to execute between 7am-8am (13-14 utc) cent time
-  if int(datetime.datetime.utcnow().strftime("%H")) >= 13 and int(datetime.datetime.utcnow().strftime("%H")) <= 14:
+  if int(datetime.datetime.utcnow().strftime("%H")) >= 13 and int(datetime.datetime.utcnow().strftime("%H")) <= 18:
     
 
     # stores list of str messages to concatenate into final message
@@ -162,8 +162,8 @@ while True:
     VIXdata = yf.Ticker('^VIX')
     VIX_df = VIXdata.history(period='6mo')['Close']
     
-    currentvix = VIX_df[-1]
-    prev_vix = VIX_df[-3] #used -3 rather than -2 away from current to avoid update errors
+    currentvix = VIX_df.iloc[-1]
+    prev_vix = VIX_df.iloc[-3] #used -3 rather than -2 away from current to avoid update errors
     currentvix_rounded = round(currentvix, 2)
     prev_vix_rounded = round(prev_vix, 2)
     print(f"The current VIX is {currentvix_rounded} ")
@@ -174,29 +174,29 @@ while True:
 
     # logic for what to add to the text message sent. A string
     # that tells vix high,low,etc. and also numeric value.
-    if VIX_df[-1] < 12:
+    if VIX_df.iloc[-1] < 12:
       print("Vix Volatility LOW. ")
       VIX_low_txt = "Vix Volatility LOW. "
       VIX_low_val_msg = VIX_low_txt + str_prev_vix_rounded + str_currentvix_rounded
       msg_list.append(VIX_low_val_msg)
-    elif (VIX_df[-1] > 20) and (VIX_df[-1] < 30):
+    elif (VIX_df.iloc[-1] > 20) and (VIX_df.iloc[-1] < 30):
       print("Vix Volatility HIGH. ")
       VIX_high_txt = "Vix Volatility HIGH. "
       VIX_high_val_msg = VIX_high_txt + str_prev_vix_rounded + str_currentvix_rounded
       msg_list.append(VIX_high_val_msg)
-    elif VIX_df[-1] > 30:
+    elif VIX_df.iloc[-1] > 30:
       VIX_vhigh_txt = "Vix Volatility EXCEPTIONALLY HIGH. "
       VIX_vhigh_val_msg = VIX_vhigh_txt + str_prev_vix_rounded + str_currentvix_rounded
       print("Vix Volatility EXCEPTIONALLY HIGH. ")
       msg_list.append(VIX_vhigh_val_msg)
-    elif (VIX_df[-1] > 12) and (VIX_df[-1] < 20):
+    elif (VIX_df.iloc[-1] > 12) and (VIX_df.iloc[-1] < 20):
       VIX_norm_txt = "Vix Volatility Normal Range. "
       VIX_norm_val_msg = VIX_norm_txt + str_prev_vix_rounded + str_currentvix_rounded
       print("Vix Volatility Normal Range. ")
       msg_list.append(VIX_norm_val_msg)
     
     # alert for new low on VIX
-    if (VIX_df[-1] < 12) and (VIX_df[-3] > 12):
+    if (VIX_df.iloc[-1] < 12) and (VIX_df.iloc[-3] > 12):
       print("VIX Volatility just became LOW.")
       new_vix_low = "**VIX Volatility just became LOW.**"
       
@@ -210,7 +210,7 @@ while True:
         send_new_alert = True
       
     
-    if (((VIX_df[-1] > 20) and (VIX_df[-1] < 30)) and (VIX_df[-3] < 20)):
+    if (((VIX_df.iloc[-1] > 20) and (VIX_df.iloc[-1] < 30)) and (VIX_df.iloc[-3] < 20)):
       print("Vix Volatility just became HIGH.")
       new_vix_high = "**Vix Volatility just became HIGH.**"
       
@@ -221,7 +221,7 @@ while True:
         msg_list.insert(0, new_vix_high)
         send_new_alert = True
 
-    if (VIX_df[-1] > 30) and (VIX_df[-3] < 30):
+    if (VIX_df.iloc[-1] > 30) and (VIX_df.iloc[-3] < 30):
       print("Vix Volatility just became EXCEPTIONALLY HIGH.")
       new_vix_higher = "**Vix Volatility just became EXCEPTIONALLY HIGH.**"
       
@@ -274,7 +274,7 @@ while True:
       fetched = db['status']
 
     # part of the send mail logic, checks db for date to avoid duplicate sends
-    if (send_new_alert == True) and (fetched != xdaymdy):
+    if send_new_alert and (fetched != xdaymdy):
       send_email(msg_str)
       time.sleep(10)
       #send_email(msg_str,"example@example.com") # <- to send to additonal people
