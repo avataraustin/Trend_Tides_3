@@ -22,7 +22,9 @@ receiver_email = os.environ['user_phones_email']
 
 # Days you want to get a text report, regardless of new trend
 # format of "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
-alert_days = ["Wed","Fri","Sat","Thu"]
+alert_days = ["Wed"]
+trend_period = 50 # Int, number of days to calculate asset trends below typically 50 days
+
 
 
 # app runs in a loop at set UTC hour
@@ -30,7 +32,7 @@ while True:
   print ("Restarting...")
   print("current utc hour:", datetime.datetime.utcnow().strftime("%H"))
   #below code causes to execute between 7am-8am (13-14 utc) cent time
-  if int(datetime.datetime.utcnow().strftime("%H")) >= 13 and int(datetime.datetime.utcnow().strftime("%H")) <= 18:
+  if int(datetime.datetime.utcnow().strftime("%H")) >= 13 and int(datetime.datetime.utcnow().strftime("%H")) <= 14:
     
 
     # stores list of str messages to concatenate into final message
@@ -63,9 +65,9 @@ while True:
     msg_list.append(fedfundtxt)
 
     ### Trend alerts ###
-    
+    msg_list.append(f"Trend alerts calculated for {trend_period} day periods:")
     # linreg slope calculation of USDX
-    lrg_usdx = lrg_deg('DX-Y.NYB',length=50) # pull the linreg data
+    lrg_usdx = lrg_deg('DX-Y.NYB',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     usdx_msg = lrg_alerts(lrg_usdx,'USDX_trend','USDX Dollar Index')
 
@@ -76,7 +78,7 @@ while True:
       msg_list.append(usdx_msg)
 
     # S&P 500 ('SPY') linreg trend calculation
-    lrg_spy = lrg_deg('SPY',length=50) # pull the linreg data
+    lrg_spy = lrg_deg('SPY',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     spy_msg = lrg_alerts(lrg_spy,'SPY_trend','S&P 500 (SPY)')
 
@@ -87,7 +89,7 @@ while True:
       msg_list.append(spy_msg)
 
     # Bitcoin linreg slope calculation of 'BTC-USD'
-    lrg_btc = lrg_deg('BTC-USD',length=50) # pull the linreg data
+    lrg_btc = lrg_deg('BTC-USD',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     btc_msg = lrg_alerts(lrg_btc,'BTC_trend','Bitcoin USD')
 
@@ -98,7 +100,7 @@ while True:
       msg_list.append(btc_msg)
 
     # linreg slope calculation of Ethereum
-    lrg_eth = lrg_deg('ETH-USD',length=50) # pull the linreg data
+    lrg_eth = lrg_deg('ETH-USD',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     eth_msg = lrg_alerts(lrg_eth,'ETH_trend','Ethereum USD')
 
@@ -109,7 +111,7 @@ while True:
       msg_list.append(eth_msg)
 
     # linreg slope calculation of Gold
-    lrg_gold = lrg_deg('GC=F',length=50) # pull the linreg data
+    lrg_gold = lrg_deg('GC=F',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     gold_msg = lrg_alerts(lrg_gold,'GOLD_trend','Gold')
 
@@ -120,7 +122,7 @@ while True:
       msg_list.append(gold_msg)
 
     # linreg slope calculation of Silver
-    lrg_slv = lrg_deg('SI=F',length=50) # pull the linreg data
+    lrg_slv = lrg_deg('SI=F',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     slv_msg = lrg_alerts(lrg_slv,'SILVER_trend','Silver')
 
@@ -131,7 +133,7 @@ while True:
       msg_list.append(slv_msg)
 
     # linreg slope calculation of Corn
-    lrg_corn = lrg_deg('ZC=F',length=50) # pull the linreg data
+    lrg_corn = lrg_deg('ZC=F',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     corn_msg = lrg_alerts(lrg_corn,'CORN_trend','Corn')
 
@@ -142,7 +144,7 @@ while True:
       msg_list.append(corn_msg)
 
     # linreg slope calculation of Soy Beans
-    lrg_soy = lrg_deg('ZS=F',length=50) # pull the linreg data
+    lrg_soy = lrg_deg('ZS=F',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     soy_msg = lrg_alerts(lrg_soy,'SOY_trend','Soy Beans')
 
