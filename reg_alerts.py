@@ -35,6 +35,12 @@ def lrg_alerts(tup, db_key, name='This ticker'):
 
   returns: str (alert message)
   """
+  try:
+    dbkey = db[db_key]
+  except KeyError:
+    print("DB db_key entry may not yet exist, assigning initial value")
+    db[db_key] = "initial start value"
+  
   cur_week = datetime.datetime.now().strftime("%W")
 
   if tup[0] >= 1:
@@ -60,3 +66,4 @@ def lrg_alerts(tup, db_key, name='This ticker'):
 # for determining whether send_new_alert = True , use string.startswith("***")
 # and it should pick up when there is a new trend. include AND db[thekey] does not
 # match cur_week value as well to stop duplicate alerts later in the week.
+
