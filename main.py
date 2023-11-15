@@ -57,13 +57,41 @@ while True:
     '''
     
 
-    # Fetch U.S. Fed Funds Rate data & add to message
+    #### Fetch U.S. Fed Funds Rate data & add to message ###
     fed_funds_data = pdr.get_data_fred('FEDFUNDS')
     val_fed = fed_funds_data.tail(1)['FEDFUNDS'].values[0]
     fedfundtxt = f"Latest Fed Funds Rate: {val_fed}"
     print(f"Latest Fed Funds Rate: {val_fed}")
     msg_list.append(fedfundtxt)
 
+    
+    #### Fetch the CPI data from FRED ###
+
+    # Define the start and end dates for fetching data
+    start = datetime.datetime(2000, 1, 1)
+    end = datetime.datetime.now()
+    
+    cpi = pdr.get_data_fred('CPIAUCSL', start=start, end=end)
+
+    # Calculate year-over-year percentage change to approximate inflation rate
+    cpi['Inflation Rate'] = cpi['CPIAUCSL'].pct_change(periods=12) * 100
+
+    most_recent_cpi = cpi.tail()['Inflation Rate'].iloc[-1] #last inflation val
+   
+    most_recent_cpi_date_index = cpi.tail().index[-1] # last date val
+    
+    # If most_recent_cpi_date_index isn't a datetime object, convert it
+    if not isinstance(most_recent_cpi_date_index, datetime.datetime):
+      most_recent_cpi_date_index = pd.to_datetime(most_recent_cpi_date_index)
+
+    # format to right datetime to display
+    most_recent_cpi_date = most_recent_cpi_date_index.strftime('%Y-%B-%d')
+
+    print(f"U.S. CPI Inflation data as of {most_recent_cpi_date} is {most_recent_cpi:.2f}%")
+    cpi_msg = f"U.S. CPI Inflation data as of {most_recent_cpi_date} is {most_recent_cpi:.2f}%"    
+    msg_list.append(cpi_msg) # append the cpi data to alert message
+
+    
     ### Trend alerts ###
     msg_list.append(f"Trend alerts calculated for {trend_period} day periods:")
     # linreg slope calculation of USDX
