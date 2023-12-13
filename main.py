@@ -22,7 +22,9 @@ receiver_email = os.environ['user_phones_email']
 
 # Days you want to get a text report, regardless of new trend
 # format of "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
-alert_days = ["Wed","Fri","Sat","Thu"]
+alert_days = ["Wed"]
+trend_period = 50 # Int, number of days to calculate asset trends below typically 50 days
+
 
 
 # app runs in a loop at set UTC hour
@@ -30,7 +32,7 @@ while True:
   print ("Restarting...")
   print("current utc hour:", datetime.datetime.utcnow().strftime("%H"))
   #below code causes to execute between 7am-8am (13-14 utc) cent time
-  if int(datetime.datetime.utcnow().strftime("%H")) >= 13 and int(datetime.datetime.utcnow().strftime("%H")) <= 18:
+  if int(datetime.datetime.utcnow().strftime("%H")) >= 13 and int(datetime.datetime.utcnow().strftime("%H")) <= 14:
     
 
     # stores list of str messages to concatenate into final message
@@ -55,17 +57,45 @@ while True:
     '''
     
 
-    # Fetch U.S. Fed Funds Rate data & add to message
+    #### Fetch U.S. Fed Funds Rate data & add to message ###
     fed_funds_data = pdr.get_data_fred('FEDFUNDS')
     val_fed = fed_funds_data.tail(1)['FEDFUNDS'].values[0]
-    fedfundtxt = f"Latest Fed Funds Rate: {val_fed}"
-    print(f"Latest Fed Funds Rate: {val_fed}")
+    fedfundtxt = f"Latest Fed Funds Rate: {val_fed}%"
+    print(f"Latest Fed Funds Rate: {val_fed}%")
     msg_list.append(fedfundtxt)
 
-    ### Trend alerts ###
     
+    #### Fetch the CPI data from FRED ###
+
+    # Define the start and end dates for fetching data
+    start = datetime.datetime(2000, 1, 1)
+    end = datetime.datetime.now()
+    
+    cpi = pdr.get_data_fred('CPIAUCSL', start=start, end=end)
+
+    # Calculate year-over-year percentage change to approximate inflation rate
+    cpi['Inflation Rate'] = cpi['CPIAUCSL'].pct_change(periods=12) * 100
+
+    most_recent_cpi = cpi.tail()['Inflation Rate'].iloc[-1] #last inflation val
+   
+    most_recent_cpi_date_index = cpi.tail().index[-1] # last date val
+    
+    # If most_recent_cpi_date_index isn't a datetime object, convert it
+    if not isinstance(most_recent_cpi_date_index, datetime.datetime):
+      most_recent_cpi_date_index = pd.to_datetime(most_recent_cpi_date_index)
+
+    # format to right datetime to display
+    most_recent_cpi_date = most_recent_cpi_date_index.strftime('%Y-%B-%d')
+
+    print(f"U.S. CPI Inflation data as of {most_recent_cpi_date} is {most_recent_cpi:.2f}%")
+    cpi_msg = f"U.S. CPI Inflation data as of {most_recent_cpi_date} is {most_recent_cpi:.2f}%"    
+    msg_list.append(cpi_msg) # append the cpi data to alert message
+
+    
+    ### Trend alerts ###
+    msg_list.append(f"Trend alerts calculated for {trend_period} day periods:")
     # linreg slope calculation of USDX
-    lrg_usdx = lrg_deg('DX-Y.NYB',length=50) # pull the linreg data
+    lrg_usdx = lrg_deg('DX-Y.NYB',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     usdx_msg = lrg_alerts(lrg_usdx,'USDX_trend','USDX Dollar Index')
 
@@ -76,7 +106,7 @@ while True:
       msg_list.append(usdx_msg)
 
     # S&P 500 ('SPY') linreg trend calculation
-    lrg_spy = lrg_deg('SPY',length=50) # pull the linreg data
+    lrg_spy = lrg_deg('SPY',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     spy_msg = lrg_alerts(lrg_spy,'SPY_trend','S&P 500 (SPY)')
 
@@ -87,7 +117,7 @@ while True:
       msg_list.append(spy_msg)
 
     # Bitcoin linreg slope calculation of 'BTC-USD'
-    lrg_btc = lrg_deg('BTC-USD',length=50) # pull the linreg data
+    lrg_btc = lrg_deg('BTC-USD',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     btc_msg = lrg_alerts(lrg_btc,'BTC_trend','Bitcoin USD')
 
@@ -98,7 +128,7 @@ while True:
       msg_list.append(btc_msg)
 
     # linreg slope calculation of Ethereum
-    lrg_eth = lrg_deg('ETH-USD',length=50) # pull the linreg data
+    lrg_eth = lrg_deg('ETH-USD',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     eth_msg = lrg_alerts(lrg_eth,'ETH_trend','Ethereum USD')
 
@@ -109,7 +139,7 @@ while True:
       msg_list.append(eth_msg)
 
     # linreg slope calculation of Gold
-    lrg_gold = lrg_deg('GC=F',length=50) # pull the linreg data
+    lrg_gold = lrg_deg('GC=F',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     gold_msg = lrg_alerts(lrg_gold,'GOLD_trend','Gold')
 
@@ -120,7 +150,7 @@ while True:
       msg_list.append(gold_msg)
 
     # linreg slope calculation of Silver
-    lrg_slv = lrg_deg('SI=F',length=50) # pull the linreg data
+    lrg_slv = lrg_deg('SI=F',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     slv_msg = lrg_alerts(lrg_slv,'SILVER_trend','Silver')
 
@@ -131,7 +161,7 @@ while True:
       msg_list.append(slv_msg)
 
     # linreg slope calculation of Corn
-    lrg_corn = lrg_deg('ZC=F',length=50) # pull the linreg data
+    lrg_corn = lrg_deg('ZC=F',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     corn_msg = lrg_alerts(lrg_corn,'CORN_trend','Corn')
 
@@ -142,7 +172,7 @@ while True:
       msg_list.append(corn_msg)
 
     # linreg slope calculation of Soy Beans
-    lrg_soy = lrg_deg('ZS=F',length=50) # pull the linreg data
+    lrg_soy = lrg_deg('ZS=F',length=trend_period) # pull the linreg data
     # calculate trend alert and return the alert message
     soy_msg = lrg_alerts(lrg_soy,'SOY_trend','Soy Beans')
 
