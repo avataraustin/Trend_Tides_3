@@ -1,5 +1,5 @@
 # Trend-Tides
-tracks financial markets tickers and sends alerts of trend changes.
+tracks financial markets tickers and sends alerts of trend changes. This version designed for use on Replit.com, uses their minimalist database.
 
 ### Config
 This app/script needs access to smtp email account to send the email message out to the appropriate email to sms email address the user needs to use.
