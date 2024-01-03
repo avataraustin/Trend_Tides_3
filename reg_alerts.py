@@ -37,7 +37,7 @@ def lrg_alerts(tup, db_key, name='This ticker'):
   """
   try:
     dbkey = db[db_key]
-  except KeyError:
+  except Exception:
     print("DB db_key entry may not yet exist, assigning initial value")
     db[db_key] = "initial start value"
   

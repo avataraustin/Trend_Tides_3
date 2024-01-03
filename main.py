@@ -31,8 +31,8 @@ trend_period = 50 # Int, number of days to calculate asset trends below typicall
 while True:
   print ("Restarting...")
   print("current utc hour:", datetime.datetime.utcnow().strftime("%H"))
-  #below code causes to execute between 7am-8am (13-14 utc) cent time
-  if int(datetime.datetime.utcnow().strftime("%H")) >= 13 and int(datetime.datetime.utcnow().strftime("%H")) <= 14:
+  #below code causes to execute between 9am-10am (15-16 utc) cent time
+  if int(datetime.datetime.utcnow().strftime("%H")) >= 15 and int(datetime.datetime.utcnow().strftime("%H")) <= 16:
     
 
     # stores list of str messages to concatenate into final message
